@@ -1,0 +1,178 @@
+#include <iostream>
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#define ERROR 0
+#define OK 1
+#define FALSE 0
+typedef int Status;
+typedef int ElemType;
+
+using namespace std;
+typedef struct LNode
+{
+	int data;			//data中存放结点数据域（默认是int型）
+	struct LNode *next; //指向后继结点的指针
+}LNode;
+typedef struct LNode *LinkList;
+//头插法
+/*
+LNode *HeadCreateList(int len)
+{
+	LNode *L = (LNode*)malloc(sizeof(LNode)); //创建一个头结点
+	LNode *temp = L;//声明一个中间变量，指向头结点，用于遍历链表（曾因没有这个中间变量而出错）
+	temp->next = NULL;	//该链表此刻只带头结点
+
+	for(int i=1;i<=len;i++) //循环申请len个结点来接收scanf得到的元素
+	{
+		LNode *p = (LNode*)malloc(sizeof(LNode)); //生成新结点
+		scanf("%d",&p->data);  //用新申请的结点来接收scanf得到的元素
+		// 以下两条语句是头插法的关键步骤，与本工程"Insert"函数原理一样
+		p->next = temp->next;  //新结点的next指针指向开始结点
+		temp->next = p;		   //头结点的next指针指向新结点
+	}
+
+	return (LNode*)L;
+}
+*/
+//尾插法
+
+LNode *TailCreateList(int len)
+{
+
+	srand(time(0));
+	LNode *L = (LNode*)malloc(sizeof(LNode)); //创建一个头结点
+	LNode *temp = L;//声明一个中间变量，指向头结点，用于遍历链表（曾因没有这个中间变量而出错）
+	temp->next = NULL;//该链表此刻只带头结点
+
+	for(int i=1;i<=len;i++) //循环申请len个结点来接收scanf得到的元素
+	{
+		LNode *p = (LNode*)malloc(sizeof(LNode)); //生成新结点
+		p->data=rand()%100+1; //用新申请的结点来接收scanf得到的元素
+		/* 以下两条语句是尾插法的关键步骤 */
+		temp->next = p;   //用来接纳新结点
+		temp = p;		  //指向终端结点，以便于接纳下一个到来的结点，此语句也可以改为"L = L->next"
+	}
+	temp->next = NULL;	  //此刻所有元素已经全装入链表L中，L的终端结点的指针域置为NULL
+	return (LNode*)L;
+}
+void printf(LNode *head)
+{
+    LNode *p;
+    p=head->next;
+
+      do{
+        cout<<p->data<<"\t";
+        p=p->next;
+        }while(p!=NULL);
+
+}
+/*int Serch(LNode *L, int elem)
+{
+	LNode *temp = L;
+	int pos = 0;
+	int i = 1;
+
+	while(temp->next!=NULL)
+	{
+		temp = temp->next;
+		if(elem==temp->data)
+		{
+			pos = i;
+			printf("The %d position in the list is %d\n",elem,pos);
+			return pos;	//返回elem元素在顺序表中的位置
+		}
+		i++;
+	}
+	printf("Serch error!\n");
+
+	return ERROR;	//查找失败
+}*/
+
+/*int  serch(LNode *head,int index)
+{
+
+    LNode *p=head;
+    int owe=0;
+    int i=1;
+    while(p->next!=NULL)
+    {
+        p=p->next;
+
+        if(p->data=index)
+        {
+
+            cout<<"数据"<<index<<"已然找到，"<<"下标为"<<owe;
+            return owe;
+        }
+        else{
+                cout<<"没有找到这个数据！"<<endl;
+
+        }
+        i++;
+
+    }
+
+    return  ERROR;
+
+
+}*/
+/*int ListInsert(LNode *L,int i,ElemType e)
+{
+    int j;
+    LNode p,s;
+    p= *L;
+    j=1;
+    while(p&&j<i)
+    {
+        p=p->next;
+        ++j;
+    }
+    if(!p||j>i)
+    return ERROR;
+    s=(LinkList)new LNode;
+    s->data=e;
+    s->next=p->next;
+    p->next=s;
+    return OK;
+}
+*/
+int GetMid(LinkList L,int *e)
+{
+
+    LinkList search,mid;
+    mid=search=L;
+    while(search->next!=NULL)
+    {
+
+        if(search->next->next!=NULL)
+        {
+
+            search=search->next->next;
+            mid=mid->next;
+        }
+        else
+        {
+            search=search->next;
+        }
+    }
+    *e=mid->data;
+    return 1;
+}
+
+int main()
+{
+    LNode *p;
+    int a;
+
+    p=TailCreateList(30);
+   // Serch(p,1);
+    printf(p);
+    //ListInsert(p,2,3);
+    GetMid(p,&a);
+    cout<<a<<endl;
+    cin.get();
+    cin.get();
+
+    return 0;
+}
