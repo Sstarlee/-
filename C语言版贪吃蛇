@@ -1,0 +1,437 @@
+/*snake.cpp**/
+
+#include “snake.h”
+
+#define N 30  //地图的宽
+#define M 81  //地图的长
+
+
+char  map[N][M];//地图数组
+int snake_length = 3;//蛇的长度
+
+Food food;  //定义食物的结构
+
+
+
+			//菜单
+void Menu()
+{
+	cout<<"●●●●●●●●●●●●●简单的说下规则wasd方向，ESC暂停，空格变颜色！●●●●●●●●●●●●●●●●●●●●●";
+	Sleep(3000);
+	system("cls");
+	cout<<"●●●●●●●●●●●●●●●●●●●●●还有3秒开始●●●●●●●●●●●●●●●●●●●●●";
+	Sleep(1000);
+	system("cls");
+	cout<<"●●●●●●●●●●●●●●●●●●●●●还有2秒开始●●●●●●●●●●●●●●●●●●●●●";
+	Sleep(1000);
+	system("cls");
+	cout<<"●●●●●●●●●●●●●●●●●●●●●还有1秒开始●●●●●●●●●●●●●●●●●●●●●";
+	Sleep(1000);
+	system("cls");
+	cout<<"●●●●●●●●●●●●●●●●●●●●●开始!●●●●●●●●●●●●●●●●●●●●●";
+}
+void gotoxy(int y, int x)
+{
+	COORD pos;
+	pos.X = x;
+	pos.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+//贪吃蛇的地图
+void Map()
+{
+	int i, j;
+	for (i = 0; i < N; i++)
+	{
+		for (j = 0; j < M - 1; j++)
+		{
+			if (i == 0 || i == N - 1 || j == 0 || j == M - 2)
+				map[i][j] =  '*' ;
+			else
+				map[i][j] = ' ';
+		}
+		map[i][j] = '\n';
+	}
+	map[i][j] = '\0';
+}
+
+
+//输出
+void Show_map()
+{
+	system("cls");
+	for (int i = 0; i<30; i++)
+		for (int j = 0; j < 80; j++)
+		{
+			gotoxy(i, j);
+			cout << map[i][j];
+		}
+	Sleep(30);
+}
+
+Snake * Create_snake(int snake_length)
+{
+	Snake *snake = new Snake;
+	char _x = rand() % 78 + 1;/**< 定位蛇的位置 */
+	char _y = rand() % 26 + 1;
+	snake->x = _x;
+	snake->y = _y;
+	Snake *_snake = snake;
+	for (int i = 0; i<snake_length - 1; i++)
+	{
+		_snake->next = new Snake;
+		_snake = _snake->next;
+		_snake->x = _x;
+		_snake->y = ++_y;
+
+	}
+	_snake->next = NULL;
+	return snake;
+}
+Snake *snake = Create_snake(snake_length);
+ 
+
+//刷新食物
+void Refresh_Food(Snake *snake)
+{
+	food.x = rand() % 78 + 1;
+	food.y = rand() % 28 + 1;
+	while (snake)
+	{
+		if (food.x == snake->x && food.y == snake->y)
+		{
+			food.x = rand() % 78 + 1;
+			food.y = rand() % 28 + 1;
+		}
+		break;//没吃到
+		
+	}
+}
+
+
+//移动蛇
+/*  不断覆盖坐标 */
+void Move_snake(Snake *snake)
+{
+	 char  x, y, x1, y1;
+	x = snake->x;
+	y = snake->y;
+	while (snake = snake->next)
+	{
+		x1 = snake->x;
+		y1 = snake->y;
+		snake->x = x;
+		snake->y = y;
+		x = x1;
+		y = y1;
+	}
+}
+
+
+//录入蛇与食物，并刷新地图
+void snake_first_write(Snake *snake)
+{
+	Map();
+	map[snake->y][snake->x] = '2';
+	while (snake = snake->next)
+		map[snake->y][snake->x] = '1';
+	map[food.y][food.x] = '$';
+
+}
+
+//给新长出来的身子定位
+void Dw(char c, Snake *_snake)
+{
+	char _x = _snake->x;
+	char _y = _snake->y;
+	_snake = _snake->next;
+	if (c == 'w')
+	{
+		_snake->x = _x;
+		_snake->y = ++_y;
+	}
+	else if (c == 's')
+	{
+		_snake->x = _x;
+		_snake->y = --_y;
+	}
+	else if (c == 'a')
+	{
+		_snake->x = ++_x;
+		_snake->y = _y;
+	}
+	else
+	{
+		_snake->x = --_x;
+		_snake->y = _y;
+	}
+	_snake->next = NULL;
+}
+//新长出来的身体加到屁股后面
+Snake *snakeadd(Snake *snake)//新长出来的身体加到屁股后面
+{
+	while (snake->next)
+	{
+		snake = snake->next;
+	}
+	Snake *newsnake = new Snake;
+	snake->next = newsnake;
+	newsnake->next = NULL;
+	return snake;
+}
+
+//判断蛇是否死亡，是否吃到了食物
+void Judgment(char c)
+{
+	Snake *_snake = snake;
+	if (snake->x == food.x && snake->y == food.y)
+	{
+		Snake *q=snakeadd(snake);
+		Dw(c, q);
+		snake_length++;
+		if (snake_length == (N - 2)*(M - 3))
+		{
+			gotoxy(35, 15);
+			cout<< "恭喜你成功通过，你太牛了！！！";
+			system("pause");
+			exit(0);
+		}
+		Refresh_Food(snake);
+		return;
+	}
+
+
+	if (snake->x == 0 || snake->x == 79 || snake->y == 0 || snake->y == 29)
+	{
+		gotoxy(35 , 15);
+		cout<< "墙都被你撞破了";
+		system("pause");
+		exit(0);
+	}
+	while (_snake = _snake->next)
+	{
+		if (snake->x == _snake->x && snake->y == _snake->y)
+		{
+			gotoxy(35, 15);
+			cout<< "你自己把自己撞死了";
+			system("pause");
+			exit(0);
+		}
+	}
+}
+
+
+
+
+
+//控制蛇
+void Control_snake()
+{
+	char p = 0;
+	char c, a = 'w';
+z:	while (!_kbhit());        //开始
+	c = _getch();
+	if (c == 'w' || c == 'a' || c == 'd' || c == 's' || c == 27 || c == 32)
+	{
+		if (c == 27 || c == 32)
+			goto s;
+		else if ((c == 'w' && a == 's') || (c == 's' && a == 'w') || (c == 'a' && a == 'd') || (c == 'd' && a == 'a'))
+			goto z;
+		else
+			a = c;
+	}
+	else
+		goto z;
+o:	Move_snake(snake);
+s:	switch (c)
+{
+	//上
+case 'w':
+	snake->y--;
+	break;
+	//下
+case 's':
+	snake->y++;
+	break;
+	//左
+case 'a':
+	snake->x--;
+	break;
+	//右
+case 'd':
+	snake->x++;
+	break;
+	//暂停
+case 27:
+	goto z;
+case 32:
+	B(&p);//闪烁函数
+	p++;
+}
+	Judgment(c);
+	snake_first_write(snake);
+	Show_map();
+	if (_kbhit())
+		c = _getch();
+	if (c == 'w' || c == 'a' || c == 'd' || c == 's' || c == 27 || c == 32)
+	{
+		if (c == 32 || c == 27)
+			goto s;
+		else if ((c == 'w' && a == 's') || (c == 's' && a == 'w') || (c == 'a' && a == 'd') || (c == 'd' && a == 'a'))
+			c = a;
+		else
+			a = c;
+	}
+	else
+		c = a;
+	goto o;
+}
+
+//初始化工作
+void Initial()
+{
+	Menu();
+	Snake *snake=Create_snake(snake_length);
+	Refresh_Food(snake);
+	snake_first_write(snake);
+	Show_map();
+}
+
+
+//变色
+void B(char *p)
+{
+	switch (*p)
+	{
+	case 0:system("color 0");
+		break;
+	case 1:system("color 1");
+		break;
+	case 2:system("color 2");
+		break;
+	case 3:system("color 3");
+		break;
+	case 4:system("color 4");
+		break;
+	case 5:system("color 5");
+		break;
+	case 6:system("color 6");
+		break;
+	case 7:system("color 7");
+		break;
+	case 8:system("color 8");
+		break;
+	case 9:system("color 9");
+		break;
+	case 10:system("color A");
+		break;
+	case 11:system("color B");
+		break;
+	case 12:system("color C");
+		break;
+	case 13:system("color D");
+		break;
+	case 14:system("color E");
+		break;
+	case 15:system("color F");
+		break;
+	default:
+		*p = 0;
+	}
+}
+/*snake.h*/
+#pragma once
+#include<stdio.h>
+#include<time.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<Windows.h>
+#include<iostream>
+using namespace std;
+//变色
+void B(char *);
+
+
+//菜单
+void Menu();
+void gotoxy(int y, int x);
+
+//贪吃蛇的地图
+void Map();
+
+
+//输出函数
+void Show_map();
+
+
+//蛇的结构
+typedef struct _a {
+	char x;
+	char y;
+	struct _a *next;
+}Snake;
+
+
+//创建蛇
+Snake * Create_snake(int snake_length);
+//void Create_snake(Snake *);
+
+
+//食物的结构
+typedef struct _b {
+	char x;
+	char y;
+}Food;
+
+
+//刷新食物
+void Refresh_Food(Snake *);
+
+
+//移动蛇
+void Move_snake(Snake *);
+void snake_first_write(Snake *snake);
+
+//录入蛇
+void Entry_snake(Snake *);
+
+
+//判断蛇是否死亡，是否吃到了食物
+void Judgment(char);
+
+
+//给新长出来的身体定位
+void Dw(char, Snake *);
+Snake *snakeadd(Snake *snake);
+
+//控制蛇
+void Control_snake();
+
+
+//初始化工作
+void Initial();
+/*main.cpp*/
+#include"snake.h"
+
+
+int main()
+{
+	
+	srand(time(NULL));         //给随机种子
+	Initial();                 //初始化工作
+	Control_snake();
+	cin.get();
+	cin.get();
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
